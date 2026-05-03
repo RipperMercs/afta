@@ -16,13 +16,13 @@
  * the publisher cannot back up.
  */
 
-import { canonicalJSON, CANONICAL_FORM_ID } from "./canonical";
+import { canonicalJSON, CANONICAL_FORM_ID } from "./canonical.js";
 import type {
   PrivateJWK,
   PublicJWK,
   ReceiptCore,
   SignedReceipt,
-} from "./types";
+} from "./types.js";
 
 const enc = new TextEncoder();
 

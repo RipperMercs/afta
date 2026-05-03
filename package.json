@@ -1,6 +1,6 @@
 {
   "name": "afta-protocol",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Reference implementation of the Agent Fair-Trade Agreement (AFTA): an open standard for API publishers fair to AI agents. Code-enforced no-charge guarantees, Ed25519-signed receipts, transparent pricing, inference-only license.",
   "type": "module",
   "main": "./dist/index.js",

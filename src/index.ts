@@ -13,7 +13,7 @@
 export {
   canonicalJSON,
   CANONICAL_FORM_ID,
-} from "./canonical";
+} from "./canonical.js";
 
 export {
   hashRequest,
@@ -23,17 +23,17 @@ export {
   loadSigningKey,
   signReceipt,
   verifyReceiptSignature,
-} from "./receipts";
+} from "./receipts.js";
 
 export {
   resolveSLA,
   checkStaleness,
   describeSLAs,
-} from "./freshness";
+} from "./freshness.js";
 
-export type { FreshnessSLA, FreshnessRegistry, StalenessCheck } from "./freshness";
+export type { FreshnessSLA, FreshnessRegistry, StalenessCheck } from "./freshness.js";
 
-export { buildManifest } from "./manifest";
+export { buildManifest } from "./manifest.js";
 
 export type {
   NoChargeReason,
@@ -42,4 +42,4 @@ export type {
   PrivateJWK,
   PublicJWK,
   AdopterConfig,
-} from "./types";
+} from "./types.js";

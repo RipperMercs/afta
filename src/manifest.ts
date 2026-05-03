@@ -5,8 +5,8 @@
  * whole JSON template.
  */
 
-import type { AdopterConfig } from "./types";
-import { CANONICAL_FORM_ID } from "./canonical";
+import type { AdopterConfig } from "./types.js";
+import { CANONICAL_FORM_ID } from "./canonical.js";
 
 const SCHEMA_URL =
   "https://tensorfeed.ai/.well-known/agent-fair-trade-schema.json";

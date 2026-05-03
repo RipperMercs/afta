@@ -1,0 +1,181 @@
+# AFTA
+
+**Agent Fair-Trade Agreement** — an open standard for API publishers fair to AI agents. This package is the reference implementation: zero runtime dependencies, runs on Node 20+, Bun, Cloudflare Workers, Deno, and modern browsers.
+
+```bash
+npm install afta
+```
+
+## What AFTA gives an agent
+
+When an agent calls a paid API that has adopted AFTA, the publisher commits, **in code that the agent can audit**, to four no-charge guarantees:
+
+1. **5xx errors don't bill.** If the handler throws, the credit is not charged.
+2. **Circuit breaker doesn't bill.** If the credit-rail upstream is unreachable after the handler ran, the call is logged as no-charge rather than committed.
+3. **Schema validation failures don't bill.** Malformed input returns 400 with a signed receipt showing `credits_charged: 0`.
+4. **Stale data doesn't bill.** If the underlying data is older than the published freshness SLA, the call is no-charge and the response carries `stale: true`.
+
+Every paid call returns an Ed25519-signed receipt the agent can verify against the publisher's public JWK with no shared secret, no certificate authority, and no server round-trip.
+
+There is no certification body. **Adoption is the certification.** Self-publish a `/.well-known/agent-fair-trade.json` conforming to the schema and you are an AFTA adopter.
+
+Standard manifesto: <https://tensorfeed.ai/agent-fair-trade>
+JSON Schema: <https://tensorfeed.ai/.well-known/agent-fair-trade-schema.json> (also bundled at `afta/schema/agent-fair-trade-schema.json`)
+
+## Quick start
+
+### 1. Generate a receipt keypair
+
+```bash
+npx afta-generate-key --publisher=example.com
+```
+
+Writes the public JWK to `./public/.well-known/example.com-receipt-key.json` (commit it). Prints the private JWK to stdout once. Set it as `RECEIPT_PRIVATE_KEY_JWK` in your runtime secret store. **Never commit the private JWK.**
+
+### 2. Sign a receipt
+
+```ts
+import {
+  loadSigningKey,
+  signReceipt,
+  hashRequest,
+  hashResponse,
+  generateReceiptId,
+  tokenShort,
+  checkStaleness,
+  resolveSLA,
+} from "afta";
+
+const FRESHNESS = {
+  "/api/premium/news/search": { maxAgeSeconds: 30 * 60 },
+};
+
+const signingKey = await loadSigningKey(process.env.RECEIPT_PRIVATE_KEY_JWK);
+if (!signingKey) throw new Error("AFTA: signing key unset");
+
+// Inside your premium handler:
+const result = await yourHandler(request);   // includes captured_at
+const url = new URL(request.url);
+const endpoint = url.pathname;
+
+const staleness = checkStaleness(FRESHNESS, endpoint, result.captured_at);
+const noChargeReason = staleness.applies && staleness.stale ? "stale_data" : null;
+
+const core = {
+  v: 1 as const,
+  id: generateReceiptId(),
+  endpoint,
+  method: request.method,
+  token_short: tokenShort(bearer),
+  credits_charged: noChargeReason ? 0 : cost,
+  credits_remaining: balanceAfter,
+  request_hash: await hashRequest(request.method, url),
+  response_hash: await hashResponse(result),
+  captured_at: result.captured_at ?? null,
+  server_time: new Date().toISOString(),
+  no_charge_reason: noChargeReason,
+  freshness_sla_seconds: resolveSLA(FRESHNESS, endpoint)?.maxAgeSeconds ?? null,
+};
+
+const receipt = await signReceipt({
+  core,
+  signingKey,
+  verifyDoc: "https://example.com/agent-fair-trade#receipts",
+});
+
+return Response.json({ ...result, receipt });
+```
+
+### 3. Build and serve your AFTA manifest
+
+```ts
+import { buildManifest } from "afta";
+
+const manifest = buildManifest({
+  publisher: {
+    name: "Example.com",
+    url: "https://example.com",
+    contact: "contact@example.com",
+    manifesto_page: "https://example.com/agent-fair-trade",
+  },
+  self_description:
+    "Example.com is agent fair-trade certified: open pricing, automatic no-charge on 5xx, breaker, schema fail, and stale data, Ed25519-signed receipts on every paid call, inference-only license.",
+  freshness_slas: "https://example.com/api/meta",
+  receipts: {
+    public_key_url: "https://example.com/.well-known/example.com-receipt-key.json",
+    verify_doc: "https://example.com/agent-fair-trade#receipts",
+  },
+  pricing: {
+    listed_at: "https://example.com/api/payment/info",
+    currency: "USDC",
+    network: "eip155:8453",
+    network_name: "Base mainnet",
+  },
+  data_license: { type: "inference-only" },
+});
+
+// Serve as /.well-known/agent-fair-trade.json
+return new Response(JSON.stringify(manifest, null, 2), {
+  headers: { "content-type": "application/json" },
+});
+```
+
+### 4. Verify a receipt (agent side)
+
+```ts
+import { verifyReceiptSignature } from "afta";
+
+const publicJwk = await fetch(
+  "https://example.com/.well-known/example.com-receipt-key.json",
+).then((r) => r.json());
+
+const valid = await verifyReceiptSignature(receipt, publicJwk);
+```
+
+## API surface
+
+| Export | Purpose |
+| --- | --- |
+| `canonicalJSON(value)` | Deterministic JSON serialization. The serialization receipts are signed over. |
+| `CANONICAL_FORM_ID` | Constant: `"afta-canonical-json-v1"`. |
+| `hashRequest(method, url)` | sha256 of `METHOD path?canonicalQuery`. |
+| `hashResponse(result)` | sha256 of canonical JSON of the response body. |
+| `tokenShort(token)` | Non-PII short reference of a bearer token. |
+| `generateReceiptId()` | `rcpt_<16hex>`. |
+| `loadSigningKey(jwk)` | Import a private JWK to a signing CryptoKey. |
+| `signReceipt({core, signingKey, verifyDoc})` | Produce a `SignedReceipt`. |
+| `verifyReceiptSignature(signed, publicJwk)` | `true` iff the receipt verifies. |
+| `resolveSLA(registry, path)` | Look up freshness SLA for an endpoint (with prefix matching). |
+| `checkStaleness(registry, endpoint, capturedAt)` | Is this response stale relative to the SLA? |
+| `describeSLAs(registry, reasons)` | Public-facing array shape for `/api/meta`. |
+| `buildManifest(config, options)` | Build the `/.well-known/agent-fair-trade.json` document. |
+
+## Network of adopters
+
+Current AFTA adopters:
+
+- [tensorfeed.ai](https://tensorfeed.ai/agent-fair-trade) — AI infrastructure & news (host of the federated credit ledger)
+- [terminalfeed.io](https://terminalfeed.io/agent-fair-trade) — real-time data dashboards (federation member)
+
+If you adopt AFTA, open a PR to add yourself to the list. There is no fee, no review process, no certification authority. Self-publish a conforming manifest, cite the code that enforces each guarantee, and you are in.
+
+## Why this exists
+
+The first wave of agent-facing APIs is shipping right now, mostly under terms-of-service contracts that were written for human users. Agents have no way to verify that a 500 didn't cost them a credit, no way to verify what they were billed and why, no way to audit a publisher's freshness claims, and no path to recourse when a publisher silently changes the rules. AFTA is what we built when we asked: what would it look like if those guarantees were enforced in code instead of policy, with cryptographic attestation instead of "trust us"?
+
+It is intentionally a small standard. It does not solve identity, attribution, anti-abuse, or liability. It solves the narrowest, most concrete piece: an agent paying a publisher should be able to verify, after the fact, that the publisher honored the guarantees they advertised. Everything else can compose on top.
+
+## License
+
+MIT. The standard is open. The schema is open. This implementation is open. Use it, fork it, port it to other languages, ship it.
+
+## Contributing
+
+PRs welcome — especially:
+- Ports to other runtimes (FastAPI, hono, express, Deno)
+- Drop-in middleware (`afta-cloudflare-worker`, `afta-fastapi`)
+- Verification SDKs in agent frameworks (LangChain, LlamaIndex, Mastra, etc.)
+- Schema-conformant validators
+- Bug reports with reproduction steps
+
+The build trail is in the git log. AFTA was designed by [Ripper](https://github.com/RipperMercs) in collaboration with Claude (Anthropic).

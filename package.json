@@ -1,0 +1,54 @@
+{
+  "name": "afta",
+  "version": "0.1.0",
+  "description": "Reference implementation of the Agent Fair-Trade Agreement (AFTA): an open standard for API publishers fair to AI agents. Code-enforced no-charge guarantees, Ed25519-signed receipts, transparent pricing, inference-only license.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema": "./schema/agent-fair-trade-schema.json"
+  },
+  "files": [
+    "dist",
+    "schema",
+    "scripts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "generate-key": "node scripts/generate-receipt-key.mjs"
+  },
+  "keywords": [
+    "afta",
+    "agent-fair-trade",
+    "ai-agents",
+    "x402",
+    "ed25519",
+    "receipts",
+    "agent-payments",
+    "open-standard"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^1.6.0"
+  },
+  "homepage": "https://github.com/RipperMercs/afta",
+  "bugs": "https://github.com/RipperMercs/afta/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RipperMercs/afta.git"
+  }
+}

@@ -2,22 +2,37 @@
 
 Canonical home: **[afta.dev](https://afta.dev)** · Source repo: **[github.com/RipperMercs/afta](https://github.com/RipperMercs/afta)** · Governance: **[GOVERNANCE.md](./GOVERNANCE.md)**
 
-**Agent Fair-Trade Agreement.** An open standard for API publishers fair to AI agents. This package is the reference implementation: zero runtime dependencies, runs on Node 20+, Bun, Cloudflare Workers, Deno, and modern browsers.
+**Agent Fair-Trade Agreement.** AFTA is the open standard for API trade between humans, businesses, and AI agents. As autonomous agents move trillions of micropayments per day across the internet of money, both sides of every paid call need the same thing: a clear, code-enforceable contract that says what was charged, what was delivered, and what either party can dispute. Loose terms break down at agent velocity.
+
+This package is the reference implementation: zero runtime dependencies, runs on Node 20+, Bun, Cloudflare Workers, Deno, and modern browsers.
 
 ```bash
 npm install afta-protocol
 ```
 
-## What AFTA gives an agent
+## What AFTA gives both sides
 
-When an agent calls a paid API that has adopted AFTA, the publisher commits, **in code that the agent can audit**, to four no-charge guarantees:
+AFTA is bilateral by design. The same primitives (code-enforced no-charge guarantees, Ed25519-signed receipts, public freshness SLAs, on-chain settlement) protect agents and publishers in the same handshake.
+
+### For the agent
+
+When an agent calls a paid API that has adopted AFTA, the publisher commits, **in code the agent can audit**, to four no-charge guarantees:
 
 1. **5xx errors don't bill.** If the handler throws, the credit is not charged.
 2. **Circuit breaker doesn't bill.** If the credit-rail upstream is unreachable after the handler ran, the call is logged as no-charge rather than committed.
 3. **Schema validation failures don't bill.** Malformed input returns 400 with a signed receipt showing `credits_charged: 0`.
 4. **Stale data doesn't bill.** If the underlying data is older than the published freshness SLA, the call is no-charge and the response carries `stale: true`.
 
-Every paid call returns an Ed25519-signed receipt the agent can verify against the publisher's public JWK with no shared secret, no certificate authority, and no server round-trip.
+Plus an Ed25519-signed receipt on every paid call, verifiable offline against the publisher's public JWK. No shared secret, no certificate authority, no server round-trip.
+
+### For the publisher
+
+The same primitives that protect the agent also protect the business on the other side of the call:
+
+1. **Dispute-resistant revenue.** Every charge is recorded as a signed receipt the publisher can produce later. "I never made that call" does not survive a verifiable signature chain.
+2. **Reputation defense.** The public no-charge ledger and verifiable receipt trail prove the publisher honored advertised terms when an agent or its operator claims otherwise.
+3. **Bounded exposure.** The four no-charge rules are bidirectional limits: code-enforced ceilings on agent loss, and code-enforced floors on what the publisher can be retroactively accused of mis-billing.
+4. **Open distribution.** Publish a manifest at `/.well-known/agent-fair-trade.json`, and any agent that recognizes the standard already knows how to transact, audit, and verify. No vendor-specific onboarding tax for either side.
 
 There is no certification body. **Adoption is the certification.** Self-publish a `/.well-known/agent-fair-trade.json` conforming to the schema and you are an AFTA adopter.
 
@@ -163,9 +178,11 @@ If you adopt AFTA, open a PR to add yourself to the list. There is no fee, no re
 
 ## Why this exists
 
-The first wave of agent-facing APIs is shipping right now, mostly under terms-of-service contracts that were written for human users. Agents have no way to verify that a 500 didn't cost them a credit, no way to verify what they were billed and why, no way to audit a publisher's freshness claims, and no path to recourse when a publisher silently changes the rules. AFTA is what we built when we asked: what would it look like if those guarantees were enforced in code instead of policy, with cryptographic attestation instead of "trust us"?
+The first wave of agent-paid APIs is shipping right now, mostly under terms-of-service contracts written for human users. Both sides feel it. Agents have no way to verify a 500 didn't cost them a credit, no way to audit a publisher's freshness claims, no recourse when a publisher silently changes the rules. Publishers have no way to defend against bad-faith billing disputes, no way to prove a charge was legitimate after the fact, no way to ship paid endpoints without exposing themselves to ambiguous "your API double-billed me" complaints. Neither side can audit the other's behavior at the cryptographic level.
 
-It is intentionally a small standard. It does not solve identity, attribution, anti-abuse, or liability. It solves the narrowest, most concrete piece: an agent paying a publisher should be able to verify, after the fact, that the publisher honored the guarantees they advertised. Everything else can compose on top.
+AFTA is what we built when we asked: what would it look like if the contract between an agent and a publisher were enforced in code instead of policy, with cryptographic attestation instead of "trust us"? Both sides gain something concrete. Agents get verifiable charges and bounded loss. Publishers get a public record that defends them when accused of mis-billing.
+
+It is intentionally a small standard. It does not solve identity, attribution, anti-abuse, or liability. It solves the narrowest, most concrete piece: every paid call between an agent and a publisher should be verifiable by either party at any point in the future. Everything else can compose on top.
 
 ## Governance
 

@@ -1,5 +1,5 @@
 {
-  "name": "afta",
+  "name": "afta-protocol",
   "version": "0.1.0",
   "description": "Reference implementation of the Agent Fair-Trade Agreement (AFTA): an open standard for API publishers fair to AI agents. Code-enforced no-charge guarantees, Ed25519-signed receipts, transparent pricing, inference-only license.",
   "type": "module",
@@ -20,12 +20,16 @@
     "README.md",
     "LICENSE"
   ],
+  "bin": {
+    "afta-generate-key": "./scripts/generate-receipt-key.mjs"
+  },
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "generate-key": "node scripts/generate-receipt-key.mjs"
+    "generate-key": "node scripts/generate-receipt-key.mjs",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
   },
   "keywords": [
     "afta",

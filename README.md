@@ -3,7 +3,7 @@
 **Agent Fair-Trade Agreement** — an open standard for API publishers fair to AI agents. This package is the reference implementation: zero runtime dependencies, runs on Node 20+, Bun, Cloudflare Workers, Deno, and modern browsers.
 
 ```bash
-npm install afta
+npm install afta-protocol
 ```
 
 ## What AFTA gives an agent
@@ -44,7 +44,7 @@ import {
   tokenShort,
   checkStaleness,
   resolveSLA,
-} from "afta";
+} from "afta-protocol";
 
 const FRESHNESS = {
   "/api/premium/news/search": { maxAgeSeconds: 30 * 60 },
@@ -89,7 +89,7 @@ return Response.json({ ...result, receipt });
 ### 3. Build and serve your AFTA manifest
 
 ```ts
-import { buildManifest } from "afta";
+import { buildManifest } from "afta-protocol";
 
 const manifest = buildManifest({
   publisher: {
@@ -123,7 +123,7 @@ return new Response(JSON.stringify(manifest, null, 2), {
 ### 4. Verify a receipt (agent side)
 
 ```ts
-import { verifyReceiptSignature } from "afta";
+import { verifyReceiptSignature } from "afta-protocol";
 
 const publicJwk = await fetch(
   "https://example.com/.well-known/example.com-receipt-key.json",

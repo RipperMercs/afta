@@ -1,6 +1,8 @@
 # AFTA
 
-**Agent Fair-Trade Agreement** — an open standard for API publishers fair to AI agents. This package is the reference implementation: zero runtime dependencies, runs on Node 20+, Bun, Cloudflare Workers, Deno, and modern browsers.
+Canonical home: **[afta.dev](https://afta.dev)** · Source repo: **[github.com/RipperMercs/afta](https://github.com/RipperMercs/afta)** · Governance: **[GOVERNANCE.md](./GOVERNANCE.md)**
+
+**Agent Fair-Trade Agreement.** An open standard for API publishers fair to AI agents. This package is the reference implementation: zero runtime dependencies, runs on Node 20+, Bun, Cloudflare Workers, Deno, and modern browsers.
 
 ```bash
 npm install afta-protocol
@@ -154,8 +156,8 @@ const valid = await verifyReceiptSignature(receipt, publicJwk);
 
 Current AFTA adopters:
 
-- [tensorfeed.ai](https://tensorfeed.ai/agent-fair-trade) — AI infrastructure & news (host of the federated credit ledger)
-- [terminalfeed.io](https://terminalfeed.io/agent-fair-trade) — real-time data dashboards (federation member)
+- [tensorfeed.ai](https://tensorfeed.ai/agent-fair-trade): AI infrastructure & news (host of the federated credit ledger)
+- [terminalfeed.io](https://terminalfeed.io/agent-fair-trade): real-time data dashboards (federation member)
 
 If you adopt AFTA, open a PR to add yourself to the list. There is no fee, no review process, no certification authority. Self-publish a conforming manifest, cite the code that enforces each guarantee, and you are in.
 
@@ -181,7 +183,7 @@ MIT. The standard is open. The schema is open. This implementation is open. Use 
 
 ## Contributing
 
-PRs welcome — especially:
+PRs welcome, especially:
 - Ports to other runtimes (FastAPI, hono, express, Deno)
 - Drop-in middleware (`afta-cloudflare-worker`, `afta-fastapi`)
 - Verification SDKs in agent frameworks (LangChain, LlamaIndex, Mastra, etc.)

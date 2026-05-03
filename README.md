@@ -165,6 +165,16 @@ The first wave of agent-facing APIs is shipping right now, mostly under terms-of
 
 It is intentionally a small standard. It does not solve identity, attribution, anti-abuse, or liability. It solves the narrowest, most concrete piece: an agent paying a publisher should be able to verify, after the fact, that the publisher honored the guarantees they advertised. Everything else can compose on top.
 
+## Governance
+
+AFTA's governance is small and capture-resistant by design. See [GOVERNANCE.md](./GOVERNANCE.md) for the full document. Key principles:
+
+- Adoption is the certification. No authority, no review board, no fee.
+- v1 is frozen at 5 independent adopters; v2+ is additive only.
+- Stewardship is a role (one human + one AI agent), not a person.
+- Forking is always available. The license is the ultimate veto.
+- No foundation, no central registry, no payment rail mandate.
+
 ## License
 
 MIT. The standard is open. The schema is open. This implementation is open. Use it, fork it, port it to other languages, ship it.
